@@ -9,8 +9,13 @@ from memnn import MemNN
 
 import subprocess
 import sys
-from StringIO import StringIO
 import pandas as pd
+import numpy as np
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 parser = argparse.ArgumentParser()
