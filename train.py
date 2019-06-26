@@ -150,14 +150,31 @@ def generate_model_filename(task_id, data_size, n_epochs):
 
 def get_free_gpu():
     gpu_stats = subprocess.check_output(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"])
-    gpu_df = pd.read_csv(StringIO(str(gpu_stats)),
+    gpu_stats_str = gpu_stats.decode('utf-8')
+    gpu_stats_list = gpu_stats_str.replace('\n', ',').replace(' ', '').split(',')
+
+    gpu_stats_str_new = ''
+    for x in range(len(gpu_stats_list) - 1):
+        if x >= 2:
+            mib = gpu_stats_list[x][:-3]
+            gpu_stats_str_new += mib
+        else:
+            gpu_stats_str_new += gpu_stats_list[x]
+        
+        if x % 2 == 1:
+            gpu_stats_str_new += '\n'
+        else:
+            gpu_stats_str_new += ', '
+
+    gpu_df = pd.read_csv(StringIO(gpu_stats_str_new),
                          names=['memory.used', 'memory.free'],
-                         skiprows=1)
+                         skiprows=1,
+                         dtype='int')
     print('GPU usage:\n{}'.format(gpu_df))
-    gpu_df['memory.free'] = gpu_df['memory.free'].map(lambda x: x.rstrip(' [MiB]'))
+    # gpu_df['memory.free'] = gpu_df['memory.free'].map(lambda x: x.rstrip(' [MiB]'))
     idx = gpu_df['memory.free'].idxmax()
-    print('Returning GPU{} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
-    return idx
+    print('Returning GPU {} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
+    return int(idx)
 
 
 def run():
