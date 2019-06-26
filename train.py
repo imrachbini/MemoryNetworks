@@ -9,10 +9,7 @@ from memnn import MemNN
 
 import subprocess
 import sys
-if sys.version_info[0] < 3: 
-    from StringIO import StringIO
-else:
-    from io import StringIO
+from StringIO import StringIO
 import pandas as pd
 
 
