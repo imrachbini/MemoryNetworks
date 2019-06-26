@@ -7,6 +7,14 @@ import torch.nn as nn
 from utils import load_data, to_var, vectorize
 from memnn import MemNN
 
+import subprocess
+import sys
+if sys.version_info[0] < 3: 
+    from StringIO import StringIO
+else:
+    from io import StringIO
+import pandas as pd
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--embd_size', type=int, default=30, help='default 30. word embedding size')
@@ -137,6 +145,18 @@ def generate_model_filename(task_id, data_size, n_epochs):
     return '{}/Task_{}_{}-Epoch{}.model'.format('./checkpoints', data_size, task_id, n_epochs)
 
 
+def get_free_gpu():
+    gpu_stats = subprocess.check_output(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"])
+    gpu_df = pd.read_csv(StringIO(gpu_stats),
+                         names=['memory.used', 'memory.free'],
+                         skiprows=1)
+    print('GPU usage:\n{}'.format(gpu_df))
+    gpu_df['memory.free'] = gpu_df['memory.free'].map(lambda x: x.rstrip(' [MiB]'))
+    idx = gpu_df['memory.free'].idxmax()
+    print('Returning GPU{} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
+    return idx
+
+
 def run():
     test_acc_results = []
     # for task_id in [2, 3, 4, 6, 11, 14, 15, 18]:
@@ -165,6 +185,8 @@ def run():
 
         model = MemNN(vocab_size, embd_size, vocab_size, story_len)
         if torch.cuda.is_available():
+            free_gpu_id = get_free_gpu()
+            torch.cuda.set_device(free_gpu_id)
             model.cuda()
         optimizer = torch.optim.Adam(model.parameters())
         loss_fn = nn.NLLLoss()
