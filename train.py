@@ -151,6 +151,7 @@ def generate_model_filename(task_id, data_size, n_epochs):
 def get_free_gpu():
     gpu_stats = subprocess.check_output(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"])
     gpu_stats_str = np.genfromtxt(io.BytesIO(gpu_stats))
+    print(gpu_stats_str)
     gpu_df = pd.read_csv(StringIO(gpu_stats_str),
                          names=['memory.used', 'memory.free'],
                          skiprows=1)
