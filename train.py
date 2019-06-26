@@ -78,7 +78,7 @@ def test(model, data, w2i, batch_size, task_id):
         a = to_var(torch.LongTensor(a))
         pred = model(story, q)
         pred_idx = pred.max(1)[1]
-        correct += torch.sum(pred_idx == a).data[0]
+        correct += torch.sum(pred_idx == a).data
         count += batch_size
     acc = correct/count*100
     print('Task {} Test Acc: {:.2f}% - '.format(task_id, acc), correct, '/', count)
@@ -130,7 +130,7 @@ def train(model, train_data, test_data, optimizer, loss_fn, w2i, task_id, batch_
                         param.data[0] = 0
 
             pred_idx = pred.max(1)[1]
-            correct += torch.sum(pred_idx == a).data[0]
+            correct += torch.sum(pred_idx == a).data
             count += batch_size
 
             # for p in model.parameters():
@@ -170,10 +170,10 @@ def get_free_gpu():
                          names=['memory.used', 'memory.free'],
                          skiprows=1,
                          dtype='int')
-    print('GPU usage:\n{}'.format(gpu_df))
+    print('\nGPU usage:\n{}'.format(gpu_df))
     # gpu_df['memory.free'] = gpu_df['memory.free'].map(lambda x: x.rstrip(' [MiB]'))
     idx = gpu_df['memory.free'].idxmax()
-    print('Returning GPU {} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
+    print('\mReturning GPU {} with {} free MiB'.format(idx, gpu_df.iloc[idx]['memory.free']))
     return int(idx)
 
 
